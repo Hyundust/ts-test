@@ -10,6 +10,7 @@ export default defineConfig({
         trace: 'on-first-retry',
     },
     reporter: [
+        ['html'],
         ['line'],
         ['allure-playwright', { outputFolder: 'allure-results' }]
     ]
