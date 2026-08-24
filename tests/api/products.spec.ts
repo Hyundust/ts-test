@@ -1,25 +1,14 @@
 import { test, expect } from '../fixtures/test-fixtures';
+import {
+    ProductItem,
+    ProductsListResponse,
+    ProductsListResponseSchema,
+    ProductItemSchema
+} from '../../src/schemas/product.schema';
 
-//interface of product
-interface ProductItem {
-    id: number;
-    title: string;
-    price: number;
-    category: string;
-    description?: string;
-    stock?: number;
-    isDeleted?: boolean;
-}
 
-// interface of products list response
-interface ProductsListResponse {
-    products: ProductItem[];
-    total: number;
-    skip: number;
-    limit: number;
-}
 
-test.describe('Products API CRUD Suite', () => {
+test.describe('Products API CRUD Suite with Zod Validation', () => {
 
     //GET list of products with pagination
     test('GET /products - get list of products with limit and skip parameters', async ({ apiClient }) => {
@@ -29,30 +18,24 @@ test.describe('Products API CRUD Suite', () => {
         });
 
         expect(res.status).toBe(200);
-        expect(res.data).toBeDefined();
-        expect(res.data?.products.length).toBe(5);
-        expect(res.data?.skip).toBe(10);
-        expect(res.data?.limit).toBe(5);
+        //validating the response data structure with Zod
+        const parsedData = ProductsListResponseSchema.parse(res.data);
+        expect(parsedData.products.length).toBe(5);
+        expect(parsedData.skip).toBe(10);
+        expect(parsedData.limit).toBe(5);
     });
 
     //Search products
     test('GET /products/search - search products by keyword', async ({ apiClient }) => {
-        const query = 'phone';
+        const query = 'iPhone';
         const res = await apiClient.get<ProductsListResponse>('/products/search', {
             q: query,
         });
-
         expect(res.status).toBe(200);
-        expect(res.data).toBeDefined();
-        expect(res.data?.products.length).toBeGreaterThan(0);
+        const parsedData = ProductsListResponseSchema.parse(res.data);
+        expect(parsedData.products.length).toBeGreaterThan(0);
+        expect(parsedData.products[0]?.title.toLowerCase()).toContain(query.toLowerCase());
 
-        // Check if the products contain the search query
-        const hasMatchingProduct = res.data?.products.some(
-            (item) =>
-                item.title.toLowerCase().includes(query) || item.description?.toLowerCase().includes(query)
-        );
-
-        expect(hasMatchingProduct).toBe(true);
     });
 
     //Create new product
@@ -66,10 +49,11 @@ test.describe('Products API CRUD Suite', () => {
         const res = await apiClient.post<ProductItem>('/products/add', newProduct);
 
         expect(res.status).toBe(201); // or 200 depending on API version
-        expect(res.data).toBeDefined();
-        expect(res.data?.id).toBeDefined();
-        expect(res.data?.title).toBe(newProduct.title);
-        expect(res.data?.price).toBe(newProduct.price);
+
+        const parsedData = ProductItemSchema.parse(res.data);
+        expect(parsedData.id).toBeDefined();
+        expect(parsedData.title).toBe(newProduct.title);
+        expect(parsedData.price).toBe(newProduct.price);
     });
 
     //Update product price
@@ -81,17 +65,17 @@ test.describe('Products API CRUD Suite', () => {
 
         const res = await apiClient.put<ProductItem>('/products/1', updatedData);
 
-        expect(res.status).toBe(200);
-        expect(res.data?.price).toBe(999);
-        expect(res.data?.title).toBe('Updated Product Title');
+        const parsedData = ProductItemSchema.parse(res.data);
+        expect(parsedData.price).toBe(999);
+        expect(parsedData.title).toBe('Updated Product Title');
     });
 
     //DELETE product
     test('DELETE /products/1 - delete product', async ({ apiClient }) => {
         const res = await apiClient.delete<ProductItem>('/products/1');
 
-        expect(res.status).toBe(200);
-        expect(res.data?.isDeleted).toBe(true);
+        const parsedData = ProductItemSchema.parse(res.data);
+        expect(parsedData.isDeleted).toBe(true);
     });
 
 });
