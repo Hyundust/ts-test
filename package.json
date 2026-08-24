@@ -1,0 +1,30 @@
+{
+  "name": "aqa-ecommerce-lab",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "Playwright test",
+    "test:ui": "playwright test tests/ui",
+    "test:api": "playwright test tests/api",
+    "allure:generate": "Allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@faker-js/faker": "^10.6.0",
+    "@playwright/test": "^1.62.1",
+    "@types/node": "^26.2.0",
+    "allure-commandline": "^2.43.0",
+    "allure-playwright": "^3.10.2",
+    "tsx": "^4.23.12",
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "undici-types": "^8.3.0"
+  }
+}
