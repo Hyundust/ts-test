@@ -39,17 +39,19 @@ jobs:
       - name: Run Playwright tests
         run: npx playwright test
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-        if: ${{ always() }}
-
-      - name: Upload Playwright report artifact
+      - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
-        if: ${{ always() }}
+        if: ${{ !cancelled() }}
         with:
           path: playwright-report/
 
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-        if: ${{ always() }}
